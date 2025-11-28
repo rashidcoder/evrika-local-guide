@@ -42,27 +42,40 @@ const ReviewSection = ({ businessId }: ReviewSectionProps) => {
     try {
       const { data, error } = await supabase
         .from("reviews")
-        .select(`
-          id,
-          rating,
-          comment,
-          created_at,
-          profiles:user_id (display_name)
-        `)
+        .select("id, rating, comment, created_at, user_id")
         .eq("business_id", businessId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setReviews(data || []);
+      // Fetch profiles separately
+      const userIds = data?.map(r => r.user_id) || [];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", userIds);
 
-      if (data && data.length > 0) {
-        const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p.display_name]) || []);
+
+      const reviewsWithProfiles: Review[] = (data || []).map(r => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        created_at: r.created_at,
+        profiles: {
+          display_name: profileMap.get(r.user_id) || null
+        }
+      }));
+
+      setReviews(reviewsWithProfiles);
+
+      if (reviewsWithProfiles.length > 0) {
+        const avg = reviewsWithProfiles.reduce((sum, r) => sum + r.rating, 0) / reviewsWithProfiles.length;
         setAverageRating(avg);
       }
 
       if (user) {
-        const userReview = data?.find((r: any) => r.profiles?.display_name === user.user_metadata?.display_name);
+        const userReview = data?.find(r => r.user_id === user.id);
         setHasReviewed(!!userReview);
       }
     } catch (err) {
