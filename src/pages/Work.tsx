@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, Bell, User, Search } from "lucide-react";
+import { Building2, Bell, User, Search, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductCard from "@/components/ProductCard";
 import CompanyCard from "@/components/CompanyCard";
+import NearbyRecommendations from "@/components/NearbyRecommendations";
 
 const Work = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,6 +84,11 @@ const Work = () => {
             <span className="text-2xl font-bold text-foreground">Evrika</span>
           </Link>
           <div className="flex items-center gap-3">
+            <Link to="/emergency">
+              <Button variant="ghost" size="icon" title="Emergency Services">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
@@ -126,6 +132,9 @@ const Work = () => {
                 />
               </div>
             </div>
+
+            {/* Nearby Recommendations */}
+            <NearbyRecommendations />
 
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-4">
